@@ -1,21 +1,19 @@
 import { Routes, Route } from "react-router-dom";
 
-import Announcement from "./Components/Announcement/Announcement";
-import Navbar from "./Components/Navbar/Navbar";
-import Newsletter from "./Components/Newsletter/Newsletter";
-import Footer from "./Components/Footer/Footer";
-import Hero from "./Components/Hero/Hero";
-import BrandStrip from "./Components/BrandStrip/BrandStrip";
-import ProductSection from "./Components/ProductSection/ProductSection";
-import TopSelling from "./Components/TopSelling/TopSelling";
-import BrowseStyle from "./Components/BrowseStyle/BrowseStyle";
-import HappyCustomers from "./Components/HappyCustomers/HappyCustomers";
-
-import ProductDetails from "./Pages/ProductDetails/ProductDetails";
-import Category from "./Pages/Category/Category";
-import Cart from "./Pages/Cart/Cart";
-import ScrollToTop from "./Components/ScrollToTop/ScrollToTop";
-
+import Announcement from "./Components/Announcement";
+import Navbar from "./Components/Navbar";
+import Newsletter from "./Components/Newsletter";
+import Footer from "./Components/Footer";
+import Hero from "./Components/Hero";
+import BrandStrip from "./Components/BrandStrip";
+import ProductSection from "./Components/ProductSection";
+import TopSelling from "./Components/TopSelling";
+import BrowseStyle from "./Components/BrowseStyle";
+import HappyCustomers from "./Components/HappyCustomers";
+import ProductDetails from "./Pages/ProductDetails";
+import Category from "./Pages/Category";
+import Cart from "./Pages/Cart";
+import ScrollToTop from "./Components/ScrollToTop";
 
 function Home() {
   return (
@@ -30,17 +28,15 @@ function Home() {
   );
 }
 
-
 function App() {
   return (
     <>
-    <ScrollToTop/>
+      <ScrollToTop />
       <Announcement />
 
       <Navbar />
 
       <Routes>
-
         {/* Home Page */}
         <Route path="/" element={<Home />} />
 
@@ -52,7 +48,6 @@ function App() {
 
         {/* Cart Page */}
         <Route path="/cart" element={<Cart />} />
-
       </Routes>
 
       <Newsletter />
@@ -61,6 +56,5 @@ function App() {
     </>
   );
 }
-
 
 export default App;

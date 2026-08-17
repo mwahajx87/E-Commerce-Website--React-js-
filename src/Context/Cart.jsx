@@ -5,19 +5,15 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
 
-  // =========================
-  // ADD TO CART
-  // =========================
   const addToCart = (product) => {
     setCart((prevCart) => {
       const existingProduct = prevCart.find(
         (item) =>
           item.id === product.id &&
           item.color === product.color &&
-          item.size === product.size
+          item.size === product.size,
       );
 
-      // Product already exists
       if (existingProduct) {
         return prevCart.map((item) =>
           item.id === product.id &&
@@ -27,11 +23,10 @@ export const CartProvider = ({ children }) => {
                 ...item,
                 quantity: item.quantity + (product.quantity || 1),
               }
-            : item
+            : item,
         );
       }
 
-      // New product
       return [
         ...prevCart,
         {
@@ -42,74 +37,48 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  // =========================
-  // REMOVE FROM CART
-  // =========================
   const removeFromCart = (id, color, size) => {
     setCart((prevCart) =>
       prevCart.filter(
         (item) =>
-          !(
-            item.id === id &&
-            item.color === color &&
-            item.size === size
-          )
-      )
+          !(item.id === id && item.color === color && item.size === size),
+      ),
     );
   };
 
-  // =========================
-  // INCREASE QUANTITY
-  // =========================
   const increaseQuantity = (id, color, size) => {
     setCart((prevCart) =>
       prevCart.map((item) =>
-        item.id === id &&
-        item.color === color &&
-        item.size === size
+        item.id === id && item.color === color && item.size === size
           ? {
               ...item,
               quantity: item.quantity + 1,
             }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
-  // =========================
-  // DECREASE QUANTITY
-  // =========================
   const decreaseQuantity = (id, color, size) => {
     setCart((prevCart) =>
       prevCart
         .map((item) =>
-          item.id === id &&
-          item.color === color &&
-          item.size === size
+          item.id === id && item.color === color && item.size === size
             ? {
                 ...item,
                 quantity: item.quantity - 1,
               }
-            : item
+            : item,
         )
-        .filter((item) => item.quantity > 0)
+        .filter((item) => item.quantity > 0),
     );
   };
 
-  // =========================
-  // TOTAL ITEMS
-  // =========================
-  const cartCount = cart.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
-  // =========================
-  // TOTAL PRICE
-  // =========================
   const cartTotal = cart.reduce(
     (total, item) => total + item.price * item.quantity,
-    0
+    0,
   );
 
   return (
