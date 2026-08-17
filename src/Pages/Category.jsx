@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import FilterSidebar from "../../Components/FilterSidebar/FilterSidebar";
-import ProductCard from "../../Components/ProductCard/ProductCard";
-
-import cloth9 from "../../assets/cloth9.png";
-import cloth11 from "../../assets/cloth11.png";
-import cloth12 from "../../assets/cloth12.png";
-import cloth2 from "../../assets/cloth2.png";
-import cloth3 from "../../assets/cloth3.png";
-import cloth4 from "../../assets/cloth4.png";
-import cloth5 from "../../assets/cloth5.png";
-import cloth6 from "../../assets/cloth6.png";
-import cloth7 from "../../assets/cloth7.png";
+import ProductCard from "../Components/ProductCard";
+import FilterSidebar from "../Components/FilterSidebar";
+import cloth9 from "../assets/cloth9.png";
+import cloth11 from "../assets/cloth11.png";
+import cloth12 from "../assets/cloth12.png";
+import cloth2 from "../assets/cloth2.png";
+import cloth3 from "../assets/cloth3.png";
+import cloth4 from "../assets/cloth4.png";
+import cloth5 from "../assets/cloth5.png";
+import cloth6 from "../assets/cloth6.png";
+import cloth7 from "../assets/cloth7.png";
 
 const categoryProducts = [
   {

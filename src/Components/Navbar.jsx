@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../../assets/logo.png";
+import logo from "../assets/logo.png";
 import { useCart } from "../Context/Cart.jsx";
 
 const Navbar = () => {
   const { cartCount } = useCart();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Shared utility classes for repeated icon styles
   const iconStyle =
@@ -14,7 +15,18 @@ const Navbar = () => {
     "text-[16px] font-medium text-black cursor-pointer whitespace-nowrap transition duration-200 ease-in-out hover:text-[#555] max-[1200px]:text-[15px] max-[1024px]:text-[14px] [&_a]:text-inherit [&_a]:decoration-transparent";
 
   return (
-    <nav className="w-full min-h-[80px] flex items-center gap-[35px] px-[60px] box-border bg-white max-[1200px]:px-[40px] max-[1200px]:gap-[25px] max-[1024px]:px-[30px] max-[1024px]:gap-[20px] max-[768px]:min-h-[70px] max-[768px]:px-[20px] max-[768px]:py-[15px] max-[768px]:flex-wrap max-[768px]:gap-[15px] max-[600px]:px-[18px] max-[600px]:py-[12px] max-[600px]:gap-[12px] max-[480px]:px-[15px] max-[480px]:py-[12px] max-[375px]:px-[12px] max-[375px]:py-[10px] max-[375px]:gap-[10px] max-[320px]:px-[10px] max-[320px]:py-[8px] max-[320px]:gap-[8px] max-[250px]:min-w-[250px] max-[250px]:overflow-x-auto max-[250px]:p-[8px] max-[250px]:gap-[6px]">
+    <nav className="w-full min-h-[80px] flex items-center gap-[35px] px-[60px] box-border bg-white relative z-50 max-[1200px]:px-[40px] max-[1200px]:gap-[25px] max-[1024px]:px-[30px] max-[1024px]:gap-[20px] max-[768px]:min-h-[70px] max-[768px]:px-[20px] max-[768px]:py-[15px] max-[768px]:flex-wrap max-[768px]:gap-[15px] max-[600px]:px-[18px] max-[600px]:py-[12px] max-[600px]:gap-[12px] max-[480px]:px-[15px] max-[480px]:py-[12px] max-[375px]:px-[12px] max-[375px]:py-[10px] max-[375px]:gap-[10px] max-[320px]:px-[10px] max-[320px]:py-[8px] max-[320px]:gap-[8px] max-[250px]:min-w-[250px] max-[250px]:overflow-x-auto max-[250px]:p-[8px] max-[250px]:gap-[6px]">
+      {/* Mobile Hamburger Menu */}
+      <button 
+        className="hidden max-[768px]:flex flex-col justify-center items-center w-[30px] h-[30px] bg-transparent border-none cursor-pointer p-0 mr-[10px]"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        <span className={`block w-[24px] h-[2px] bg-black mb-[5px] transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-[7px]' : ''}`}></span>
+        <span className={`block w-[24px] h-[2px] bg-black mb-[5px] transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+        <span className={`block w-[24px] h-[2px] bg-black transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`}></span>
+      </button>
+
       <Link to="/" className="flex items-center shrink-0">
         <img
           src={logo}
@@ -23,16 +35,25 @@ const Navbar = () => {
         />
       </Link>
 
-      <ul className="flex items-center gap-[30px] list-none m-0 p-0 shrink-0 max-[1200px]:gap-[20px] max-[1024px]:gap-[16px] max-[768px]:hidden">
-        <li className={navListItemStyle}>
+      <ul className={`
+        flex items-center gap-[30px] list-none m-0 p-0 shrink-0 
+        max-[1200px]:gap-[20px] max-[1024px]:gap-[16px] 
+        max-[768px]:absolute max-[768px]:top-full max-[768px]:left-0 max-[768px]:w-full 
+        max-[768px]:bg-white max-[768px]:flex-col max-[768px]:items-start 
+        max-[768px]:px-[20px] max-[768px]:py-[20px] max-[768px]:shadow-lg 
+        max-[768px]:border-t max-[768px]:border-[#eee]
+        max-[768px]:z-40
+        ${isMobileMenuOpen ? 'max-[768px]:flex' : 'max-[768px]:hidden'}
+      `}>
+        <li className={`${navListItemStyle} max-[768px]:w-full max-[768px]:py-[10px]`}>
           <Link to="/category">Shop</Link>
         </li>
-        <li className={navListItemStyle}>On Sale</li>
-        <li className={navListItemStyle}>New Arrival</li>
-        <li className={navListItemStyle}>Brands</li>
+        <li className={`${navListItemStyle} max-[768px]:w-full max-[768px]:py-[10px]`}>On Sale</li>
+        <li className={`${navListItemStyle} max-[768px]:w-full max-[768px]:py-[10px]`}>New Arrival</li>
+        <li className={`${navListItemStyle} max-[768px]:w-full max-[768px]:py-[10px]`}>Brands</li>
       </ul>
 
-      <div className="relative flex-1 max-w-[540px] min-w-[200px] max-[1200px]:max-w-[320px] max-[1024px]:max-w-[260px] max-[768px]:w-full max-[768px]:max-w-none max-[768px]:order-3 max-[250px]:min-w-[150px]">
+      <div className="relative flex-1 max-w-[540px] min-w-[200px] max-[1200px]:max-w-[320px] max-[1024px]:max-w-[260px] max-[768px]:order-3 max-[768px]:w-full max-[768px]:max-w-none max-[250px]:min-w-[150px]">
         <i className="fa-solid fa-magnifying-glass absolute left-[18px] top-1/2 -translate-y-1/2 text-[17px] text-[#555] pointer-events-none max-[480px]:left-[15px] max-[480px]:text-[15px] max-[375px]:left-[12px] max-[375px]:text-[14px] max-[320px]:left-[10px] max-[320px]:text-[13px] max-[250px]:left-[8px] max-[250px]:text-[12px]"></i>
         <input
           type="text"

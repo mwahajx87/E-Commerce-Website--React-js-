@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import Reviews from "../../Components/Reviews/Reviews";
-import ProductRecommendations from "../../Components/ProductRecommendations/ProductRecommendations";
-import cloth1 from "../../assets/cloth1.png";
+import Reviews from "../Components/Reviews";
+import ProductRecommendations from "../Components/ProductRecommendations";
+import cloth1 from "../assets/cloth1.png";
 
 import { useCart } from "../Context/Cart";
 

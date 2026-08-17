@@ -1,7 +1,7 @@
-import cloth9 from "../../assets/cloth9.png";
-import cloth10 from "../../assets/cloth10.png";
-import cloth11 from "../../assets/cloth11.png";
-import cloth12 from "../../assets/cloth12.png";
+import cloth9 from "../assets/cloth9.png";
+import cloth10 from "../assets/cloth10.png";
+import cloth11 from "../assets/cloth11.png";
+import cloth12 from "../assets/cloth12.png";
 
 const recommendedProducts = [
   {

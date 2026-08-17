@@ -5,13 +5,13 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
   return (
-    <div className="product-card">
+    <div className="group flex flex-col">
       <Link
         to={`/product/${product.id}`}
         state={product}
         className="block text-inherit no-underline"
       >
-        <div className="group relative aspect-square w-full overflow-hidden rounded-[16px] bg-[#f2f0f0] max-[1200px]:rounded-[15px] max-[1024px]:rounded-[14px] max-[768px]:rounded-[13px] max-[600px]:rounded-[12px] max-[480px]:rounded-[10px] max-[375px]:rounded-[9px] max-[320px]:rounded-[8px] max-[250px]:min-w-[250px] max-[250px]:overflow-x-auto max-[250px]:rounded-[6px]">
+        <div className="relative aspect-square w-full overflow-hidden rounded-[16px] bg-[#f2f0f0] max-[1200px]:rounded-[15px] max-[1024px]:rounded-[14px] max-[768px]:rounded-[13px] max-[600px]:rounded-[12px] max-[480px]:rounded-[10px] max-[375px]:rounded-[9px] max-[320px]:rounded-[8px] max-[250px]:min-w-[250px] max-[250px]:overflow-x-auto max-[250px]:rounded-[6px]">
           <img
             src={product.image}
             alt={product.name}
@@ -30,22 +30,36 @@ const ProductCard = ({ product }) => {
           </button>
         </div>
 
-        <h3 className="product-name">{product.name}</h3>
+        <div className="mt-[16px]">
+          <h3 className="m-0 mb-[8px] text-[16px] font-bold text-black leading-tight max-[1200px]:text-[15px] max-[1024px]:text-[14px] max-[768px]:text-[13px] max-[600px]:text-[12px] max-[480px]:mb-[6px] max-[480px]:text-[11px] max-[375px]:text-[10px] max-[320px]:text-[9px] max-[250px]:text-[8px]">
+            {product.name}
+          </h3>
 
-        <div className="product-rating">
-          <span className="stars">★★★★★</span>
-          <span className="rating-number">{product.rating}/5</span>
-        </div>
+          <div className="flex items-center gap-[6px] mb-[8px] max-[480px]:gap-[4px] max-[480px]:mb-[6px]">
+            <span className="text-[14px] tracking-[1px] text-[#ffc633] max-[1200px]:text-[13px] max-[1024px]:text-[12px] max-[768px]:text-[11px] max-[600px]:text-[10px] max-[480px]:text-[9px] max-[375px]:text-[8px] max-[320px]:text-[7px] max-[250px]:text-[6px]">
+              ★★★★★
+            </span>
+            <span className="text-[13px] text-[#555] max-[1200px]:text-[12px] max-[1024px]:text-[11px] max-[768px]:text-[10px] max-[600px]:text-[9px] max-[480px]:text-[8px] max-[375px]:text-[7px] max-[320px]:text-[6px] max-[250px]:text-[5px]">
+              {product.rating}/5
+            </span>
+          </div>
 
-        <div className="price-row">
-          <span className="product-price">${product.price}</span>
+          <div className="flex items-center gap-[8px] flex-wrap max-[480px]:gap-[6px]">
+            <span className="text-[18px] font-bold text-black max-[1200px]:text-[16px] max-[1024px]:text-[15px] max-[768px]:text-[14px] max-[600px]:text-[13px] max-[480px]:text-[12px] max-[375px]:text-[11px] max-[320px]:text-[10px] max-[250px]:text-[9px]">
+              ${product.price}
+            </span>
 
-          {product.oldPrice && (
-            <>
-              <span className="old-price">${product.oldPrice}</span>
-              <span className="discount">-{product.discount}%</span>
-            </>
-          )}
+            {product.oldPrice && (
+              <>
+                <span className="text-[16px] text-[#777] line-through max-[1200px]:text-[14px] max-[1024px]:text-[13px] max-[768px]:text-[12px] max-[600px]:text-[11px] max-[480px]:text-[10px] max-[375px]:text-[9px] max-[320px]:text-[8px] max-[250px]:text-[7px]">
+                  ${product.oldPrice}
+                </span>
+                <span className="rounded-[62px] bg-[#ff3333]/10 px-[10px] py-[4px] text-[12px] font-medium text-[#ff3333] max-[1200px]:text-[11px] max-[1024px]:text-[10px] max-[768px]:text-[9px] max-[600px]:text-[8px] max-[480px]:text-[7px] max-[480px]:px-[8px] max-[480px]:py-[3px] max-[375px]:text-[6px] max-[320px]:text-[5px] max-[250px]:text-[4px]">
+                  -{product.discount}%
+                </span>
+              </>
+            )}
+          </div>
         </div>
       </Link>
     </div>

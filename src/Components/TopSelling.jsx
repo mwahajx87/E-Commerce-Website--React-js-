@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import cloth5 from "../../assets/cloth5.png";
-import cloth6 from "../../assets/cloth6.png";
-import cloth7 from "../../assets/cloth7.png";
-import cloth8 from "../../assets/cloth8.png";
+import cloth5 from "../assets/cloth5.png";
+import cloth6 from "../assets/cloth6.png";
+import cloth7 from "../assets/cloth7.png";
+import cloth8 from "../assets/cloth8.png";
 
 import ProductCard from "./ProductCard";
 

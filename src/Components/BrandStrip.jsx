@@ -1,10 +1,10 @@
 import React from "react";
 
-import versace from "../../assets/versace.png";
-import zara from "../../assets/zara.png";
-import gucci from "../../assets/gucci.png";
-import prada from "../../assets/prada.png";
-import calvinKlein from "../../assets/calvin-klein.png";
+import versace from "../assets/versace.png";
+import zara from "../assets/zara.png";
+import gucci from "../assets/gucci.png";
+import prada from "../assets/prada.png";
+import calvinKlein from "../assets/calvin-klein.png";
 
 const BrandStrip = () => {
   return (
