@@ -34,6 +34,15 @@ input {
   font: inherit;
 }
 
+button,
+a {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -41,4 +50,10 @@ input {
 @keyframes customerSlide {
   0% { transform: translateX(0); }
   100% { transform: translateX(calc(-50% - 10px)); }
+}
+
+@media (max-width: 639px) {
+  footer .flex.flex-col > a {
+    font-size: 12px;
+  }
 }

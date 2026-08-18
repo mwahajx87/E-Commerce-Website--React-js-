@@ -33,7 +33,7 @@ const customers = [
 
 const HappyCustomers = () => {
   return (
-    <section className="w-full bg-white px-[20px] pb-[60px] pt-[16px] overflow-hidden">
+    <section className="w-full overflow-hidden bg-white px-[20px] pb-[60px] pt-[16px] max-[639px]:px-[16px] max-[639px]:pb-[28px] max-[639px]:pt-[18px]">
       <style>{`
         @keyframes customerSlide {
           0% { transform: translateX(0); }
@@ -68,42 +68,44 @@ const HappyCustomers = () => {
       `}</style>
 
       <div className="mx-auto max-w-[1280px]">
-        <div className="mb-[24px] flex items-center justify-between gap-[16px]">
-          <h2 className="m-0 text-left text-[42px] font-black leading-[1.1] tracking-[-1.1px] text-black">
+        <div className="mb-[24px] flex items-center justify-between gap-[16px] max-[639px]:mb-[14px]">
+          <h2 className="m-0 text-left text-[42px] font-black leading-[1.1] tracking-[-1.1px] text-black max-[639px]:text-[25px] max-[639px]:leading-[0.95] max-[639px]:tracking-[-1px]">
             OUR HAPPY CUSTOMERS
           </h2>
-          <div className="flex items-center gap-[10px] text-[18px] text-black">
-            <button className="flex h-[34px] w-[34px] items-center justify-center rounded-full border border-[#d8d8d8] bg-white text-[16px] transition-colors hover:bg-[#f5f5f5]">
-              ←
+          <div className="flex items-center gap-[10px] text-[18px] text-black max-[639px]:gap-[4px] max-[639px]:text-[14px]">
+            <button className="flex h-[34px] w-[34px] items-center justify-center rounded-full border border-[#d8d8d8] bg-white text-[14px] transition-colors hover:bg-[#f5f5f5] max-[639px]:h-[28px] max-[639px]:w-[28px] max-[639px]:text-[12px]">
+              <i className="fa-solid fa-arrow-left"></i>
             </button>
-            <button className="flex h-[34px] w-[34px] items-center justify-center rounded-full border border-[#d8d8d8] bg-white text-[16px] transition-colors hover:bg-[#f5f5f5]">
-              →
+            <button className="flex h-[34px] w-[34px] items-center justify-center rounded-full border border-[#d8d8d8] bg-white text-[14px] transition-colors hover:bg-[#f5f5f5] max-[639px]:h-[28px] max-[639px]:w-[28px] max-[639px]:text-[12px]">
+              <i className="fa-solid fa-arrow-right"></i>
             </button>
           </div>
         </div>
 
         <div className="customer-reviews-wrapper">
-          <div className="customer-reviews-track">
+          <div className="customer-reviews-track gap-[10px] max-[639px]:gap-[8px]">
             {/* Duplicate customers for seamless loop */}
             {[...customers, ...customers].map((customer, index) => (
               <div
-                className="customer-card"
+                className="customer-card rounded-[18px] max-[639px]:w-[calc(100vw-32px)] max-[639px]:min-h-[150px] max-[639px]:p-[14px]"
                 key={`${customer.id}-${index}`}
               >
-                <div className="mb-[12px] text-[18px] tracking-[2px] text-[#ffc633]">
-                  ★★★★★
+                <div className="mb-[8px] flex items-center gap-[4px] text-[15px] text-[#ffc633] max-[639px]:text-[13px]">
+                  {[...Array(5)].map((_, i) => (
+                    <i key={i} className="fa-solid fa-star"></i>
+                  ))}
                 </div>
 
-                <div className="mb-[12px] flex items-center gap-[8px]">
-                  <span className="text-[17px] font-bold text-black">
+                <div className="mb-[10px] flex items-center gap-[6px] max-[639px]:mb-[8px] max-[639px]:gap-[4px]">
+                  <span className="text-[15px] font-bold text-black max-[639px]:text-[12px]">
                     {customer.name}
                   </span>
-                  <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#01ab6c] text-[10px] font-bold text-white">
-                    ✓
+                  <span className="flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#01ab6c] text-[8px] font-bold text-white max-[639px]:h-[12px] max-[639px]:w-[12px]">
+                    <i className="fa-solid fa-check"></i>
                   </span>
                 </div>
 
-                <p className="m-0 text-[14px] leading-[1.6] text-[#666]">
+                <p className="m-0 text-[14px] leading-[1.5] text-[#666] max-[639px]:text-[12px] max-[639px]:leading-[1.45]">
                   "{customer.review}"
                 </p>
               </div>

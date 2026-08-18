@@ -3,37 +3,80 @@ import formal from "../assets/formal.png";
 import party from "../assets/party.png";
 import gym from "../assets/gym.png";
 
-const styles = [
-  { id: 1, image: casual, label: "Casual", width: "40%" },
-  { id: 2, image: formal, label: "Formal", width: "60%" },
-  { id: 3, image: party, label: "Party", width: "60%" },
-  { id: 4, image: gym, label: "Gym", width: "40%" },
-];
-
 const BrowseStyle = () => {
   return (
-    <section className="w-full bg-white px-[20px] pb-[56px] pt-[4px]">
-      <div className="mx-auto max-w-[1280px]">
-        <h2 className="mb-[20px] text-left text-[42px] font-black leading-[1.1] tracking-[-1.1px] text-black">
-          BROWSE BY DRESS STYLE
-        </h2>
+    <section className="py-6 sm:py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-[#F0F0F0] rounded-3xl p-6 sm:p-12 lg:p-16">
+          <h2 className="font-integral text-2xl sm:text-4xl md:text-5xl font-black text-center uppercase mb-8 sm:mb-12">
+            BROWSE BY DRESS STYLE
+          </h2>
 
-        <div className="grid grid-cols-2 gap-[18px]">
-          {styles.map((style) => (
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6">
+            {/* Casual Card (1/3) */}
             <div
-              key={style.id}
-              className="relative h-[180px] overflow-hidden rounded-[18px] bg-[#f0f0f0]"
+              onClick={() => onNavigate("category", { dressStyle: "casual" })}
+              className="md:col-span-4 bg-white rounded-2xl overflow-hidden relative h-56 sm:h-72 cursor-pointer group shadow-xs hover:shadow-md transition-all"
+              id="style-card-casual"
             >
+              <span className="font-integral text-2xl sm:text-3xl font-bold text-black absolute top-6 left-6 z-10">
+                Casual
+              </span>
               <img
-                src={style.image}
-                alt={style.label}
-                className="h-full w-full object-cover"
+                src= {casual}
+                alt="Casual style"
+                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
               />
-              <h3 className="absolute left-[22px] top-[20px] m-0 text-[26px] font-bold text-black">
-                {style.label}
-              </h3>
             </div>
-          ))}
+
+            {/* Formal Card (2/3) */}
+            <div
+              onClick={() => onNavigate("category", { dressStyle: "formal" })}
+              className="md:col-span-8 bg-white rounded-2xl overflow-hidden relative h-56 sm:h-72 cursor-pointer group shadow-xs hover:shadow-md transition-all"
+              id="style-card-formal"
+            >
+              <span className="font-integral text-2xl sm:text-3xl font-bold text-black absolute top-6 left-6 z-10">
+                Formal
+              </span>
+              <img
+                src={formal}
+                alt="Formal style"
+                className="w-full h-full object-cover object-right group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+
+            {/* Party Card (2/3) */}
+            <div
+              onClick={() => onNavigate("category", { dressStyle: "party" })}
+              className="md:col-span-8 bg-white rounded-2xl overflow-hidden relative h-56 sm:h-72 cursor-pointer group shadow-xs hover:shadow-md transition-all"
+              id="style-card-party"
+            >
+              <span className="font-integral text-2xl sm:text-3xl font-bold text-black absolute top-6 left-6 z-10">
+                Party
+              </span>
+              <img
+                src={party}
+                alt="Party style"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+
+            {/* Gym Card (1/3) */}
+            <div
+              onClick={() => onNavigate("category", { dressStyle: "gym" })}
+              className="md:col-span-4 bg-white rounded-2xl overflow-hidden relative h-56 sm:h-72 cursor-pointer group shadow-xs hover:shadow-md transition-all"
+              id="style-card-gym"
+            >
+              <span className="font-integral text-2xl sm:text-3xl font-bold text-black absolute top-6 left-6 z-10">
+                Gym
+              </span>
+              <img
+                src={gym}
+                alt="Gym style"
+                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </section>
