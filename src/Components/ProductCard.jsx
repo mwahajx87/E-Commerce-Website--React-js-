@@ -44,7 +44,7 @@ const ProductCard = ({ product }) => {
           {product.oldPrice && (
             <>
               <span className="text-[14px] text-[#999] line-through max-[639px]:text-[11px]">
-                ${product.oldPrice}
+                {formatCurrency(product.oldPrice)}
               </span>
               <span className="rounded-full bg-[#ffe5e5] px-[8px] py-[3px] text-[10px] font-medium text-[#f33] max-[639px]:px-[5px] max-[639px]:py-[2px] max-[639px]:text-[9px]">
                 -{product.discount}%
