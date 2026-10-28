@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 
-import Announcement from "./Components/Announcement";
 import Navbar from "./Components/Navbar";
 import Newsletter from "./Components/Newsletter";
 import Footer from "./Components/Footer";
@@ -13,6 +12,8 @@ import HappyCustomers from "./Components/HappyCustomers";
 import ProductDetails from "./Pages/ProductDetails";
 import Category from "./Pages/Category";
 import Cart from "./Pages/Cart";
+import Account from "./Pages/Account";
+import InfoPage from "./Pages/InfoPage";
 import ScrollToTop from "./Components/ScrollToTop";
 
 function Home() {
@@ -32,7 +33,6 @@ function App() {
   return (
     <>
       <ScrollToTop />
-      <Announcement />
 
       <Navbar />
 
@@ -48,6 +48,9 @@ function App() {
 
         {/* Cart Page */}
         <Route path="/cart" element={<Cart />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="/account/orders" element={<Account />} />
+        <Route path="/info/:slug" element={<InfoPage />} />
       </Routes>
 
       <Newsletter />

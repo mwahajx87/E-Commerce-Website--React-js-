@@ -1,172 +1,90 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import FilterSidebar from "../Components/FilterSidebar";
 import ProductCard from "../Components/ProductCard";
-
-import cloth9 from "../assets/cloth9.png";
-import cloth11 from "../assets/cloth11.png";
-import cloth12 from "../assets/cloth12.png";
-import cloth2 from "../assets/cloth2.png";
-import cloth3 from "../assets/cloth3.png";
-import cloth4 from "../assets/cloth4.png";
-import cloth5 from "../assets/cloth5.png";
-import cloth6 from "../assets/cloth6.png";
-import cloth7 from "../assets/cloth7.png";
-
-const categoryProducts = [
-  {
-    id: 9,
-    name: "Gradient Graphic T-shirt",
-    price: 145,
-    rating: 3.5,
-    image: cloth9,
-    category: "T-shirts",
-    color: "#ffffff",
-  },
-  {
-    id: 10,
-    name: "Polo with Tipping Details",
-    price: 180,
-    rating: 4.5,
-    image: cloth11,
-    category: "Shirts",
-    color: "#dc2626",
-  },
-  {
-    id: 11,
-    name: "Black Striped T-shirt",
-    price: 120,
-    oldPrice: 150,
-    discount: 30,
-    rating: 5.0,
-    image: cloth12,
-    category: "T-shirts",
-    color: "#111111",
-  },
-  {
-    id: 2,
-    name: "Skinny Fit Jeans",
-    price: 240,
-    oldPrice: 260,
-    discount: 20,
-    rating: 3.5,
-    image: cloth2,
-    category: "Jeans",
-    color: "#2563eb",
-  },
-  {
-    id: 3,
-    name: "Checkered Shirt",
-    price: 180,
-    rating: 4.5,
-    image: cloth3,
-    category: "Shirts",
-    color: "#dc2626",
-  },
-  {
-    id: 4,
-    name: "Sleeve Striped T-shirt",
-    price: 130,
-    oldPrice: 160,
-    discount: 30,
-    rating: 4.5,
-    image: cloth4,
-    category: "T-shirts",
-    color: "#ea580c",
-  },
-  {
-    id: 5,
-    name: "Vertical Striped Shirt",
-    price: 212,
-    oldPrice: 232,
-    discount: 20,
-    rating: 5.0,
-    image: cloth5,
-    category: "Shirts",
-    color: "#16a34a",
-  },
-  {
-    id: 6,
-    name: "Courage Graphic T-shirt",
-    price: 145,
-    rating: 4.0,
-    image: cloth6,
-    category: "T-shirts",
-    color: "#ea580c",
-  },
-  {
-    id: 7,
-    name: "Loose Fit Bermuda Shorts",
-    price: 80,
-    rating: 3.0,
-    image: cloth7,
-    category: "Shorts",
-    color: "#2563eb",
-  },
-];
+import { useProducts } from "../Context/useProducts";
 
 const Category = () => {
-  const [searchParams] = useSearchParams();
+  const { products, status, error } = useProducts();
+  const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("search")?.trim().toLowerCase() || "";
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [maxPrice, setMaxPrice] = useState(500);
-  const [appliedFilters, setAppliedFilters] = useState({
-    category: null,
-    color: null,
-    maxPrice: 500,
-  });
+  const searchCategory = searchParams.get("category") || null;
+  const styleQuery = searchParams.get("style")?.trim().toLowerCase() || "";
+  const sortOrder = searchParams.get("sort") || "newest";
+  const priceLimit = Math.max(0, ...products.map((product) => product.price));
+  const maxPriceValue = searchParams.get("maxPrice");
+  const maxPriceParam = maxPriceValue === null ? null : Number(maxPriceValue);
+  const maxPrice = maxPriceParam !== null &&
+    Number.isFinite(maxPriceParam) &&
+    maxPriceParam >= 0
+    ? Math.min(maxPriceParam, priceLimit)
+    : priceLimit;
+  const currentQuery = searchParams.toString();
+  const [pageState, setPageState] = useState({ query: "", page: 1 });
+  const currentPageNum =
+    pageState.query === currentQuery ? pageState.page : 1;
+  const setCurrentPageNum = (page) =>
+    setPageState((state) => ({
+      query: currentQuery,
+      page:
+        typeof page === "function"
+          ? page(state.query === currentQuery ? state.page : 1)
+          : page,
+    }));
 
-  const handleApplyFilter = () => {
-    setAppliedFilters({
-      category: selectedCategory,
-      color: selectedColor,
-      maxPrice,
-    });
-    setCurrentPageNum(1);
+  const updateQuery = (key, value) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === null || value === "") params.delete(key);
+    else params.set(key, String(value));
+    setSearchParams(params, { replace: true });
   };
 
   const filteredProducts = useMemo(
-    () =>
-      categoryProducts.filter((product) => {
+    () => {
+      const filtered = products.filter((product) => {
         const matchesSearch =
-          !searchQuery || product.name.toLowerCase().includes(searchQuery);
-        const matchesCategory = appliedFilters.category
-          ? product.category === appliedFilters.category
+          !searchQuery ||
+          `${product.name} ${product.category} ${product.description || ""}`
+            .toLowerCase()
+            .includes(searchQuery);
+        const matchesCategory = searchCategory
+          ? product.category === searchCategory
           : true;
-        const matchesColor = appliedFilters.color
-          ? product.color === appliedFilters.color
-          : true;
-        const matchesPrice = product.price <= appliedFilters.maxPrice;
-        return matchesSearch && matchesCategory && matchesColor && matchesPrice;
-      }),
-    [appliedFilters, searchQuery],
+        const matchesStyle =
+          !styleQuery ||
+          (product.styles || []).some(
+            (style) => style.toLowerCase() === styleQuery,
+          );
+        const matchesPrice = product.price <= maxPrice;
+        return matchesSearch && matchesCategory && matchesStyle && matchesPrice;
+      });
+
+      return filtered.sort((first, second) => {
+        if (sortOrder === "price-low") return first.price - second.price;
+        if (sortOrder === "price-high") return second.price - first.price;
+        if (sortOrder === "name") return first.name.localeCompare(second.name);
+        return 0;
+      });
+    },
+    [maxPrice, products, searchCategory, searchQuery, sortOrder, styleQuery],
   );
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [currentPageNum, setCurrentPageNum] = useState(1);
   const productsPerPage = 6;
-  const pageCount = Math.max(
-    1,
-    Math.ceil(filteredProducts.length / productsPerPage),
-  );
+  const pageCount = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
   const visibleProducts = filteredProducts.slice(
     (currentPageNum - 1) * productsPerPage,
     currentPageNum * productsPerPage,
   );
 
-  useEffect(() => {
-    setCurrentPageNum(1);
-  }, [searchQuery]);
-
   return (
-    <div className="relative mx-auto w-full max-w-[1440px] px-[20px] pb-[70px] pt-[20px] box-border sm:px-[10px] sm:pb-[50px] xs:px-[15px] xs:pb-[40px]">
+    <div className="relative mx-auto w-full max-w-[1240px] px-[20px] pb-[70px] pt-[20px] box-border sm:px-[10px] sm:pb-[50px] xs:px-[15px] xs:pb-[40px]">
       <div className="mb-[20px] flex items-center gap-[8px] text-[14px] text-[#777] sm:text-[12px]">
         <Link to="/" className="text-[#777] no-underline">
           Home
         </Link>
         <span>/</span>
-        <strong className="text-[#111]">Casual</strong>
+        <strong className="text-[#111]">Shop</strong>
       </div>
 
       <div className="flex items-start gap-[30px]">
@@ -174,25 +92,28 @@ const Category = () => {
           className={`${isMobileFilterOpen ? "absolute right-[15px] top-[58px] z-50 block w-[calc(100%-30px)] max-w-[340px]" : "hidden w-0"} rounded-[16px] shadow-[0_12px_30px_rgba(0,0,0,0.16)] md:static md:z-auto md:block md:w-auto md:max-w-none md:rounded-none md:shadow-none`}
         >
           <FilterSidebar
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-            selectedColor={selectedColor}
-            setSelectedColor={setSelectedColor}
+            selectedCategory={searchCategory}
+            setSelectedCategory={(category) =>
+              updateQuery("category", category)
+            }
             maxPrice={maxPrice}
-            setMaxPrice={setMaxPrice}
+            setMaxPrice={(price) =>
+              updateQuery("maxPrice", price >= priceLimit ? null : price)
+            }
+            priceLimit={priceLimit}
+            categories={[...new Set(products.map((product) => product.category))]}
             onApply={() => {
-              handleApplyFilter();
               setIsMobileFilterOpen(false);
             }}
             onClose={() => setIsMobileFilterOpen(false)}
           />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           {/* Header Row: Title, Count, Sort, Mobile Filter Button */}
           <div className=" w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
             <div className="w-full gap-4 flex items-end justify-between">
               <h1 className="font-integral text-2xl sm:text-3xl md:text-4xl font-extrabold uppercase text-black">
-                Casual
+                Products
               </h1>
 
               <div className="flex items-center justify-between sm:justify-end gap-3 text-xs sm:text-sm text-gray-500">
@@ -208,6 +129,21 @@ const Category = () => {
                   )}{" "}
                   of {filteredProducts.length} Products
                 </span>
+                <select
+                  aria-label="Sort products"
+                  value={sortOrder}
+                  onChange={(event) => {
+                    const params = new URLSearchParams(searchParams);
+                    params.set("sort", event.target.value);
+                    setSearchParams(params);
+                  }}
+                  className="rounded-full border border-[#e5e5e5] bg-white px-3 py-2 text-xs text-black"
+                >
+                  <option value="newest">Newest</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="name">Name</option>
+                </select>
               </div>
               {/* Mobile Filter Button */}
               <button
@@ -219,7 +155,11 @@ const Category = () => {
             </div>
           </div>
 
-          {filteredProducts.length === 0 ? (
+          {status === "loading" ? (
+            <p className="py-[60px] text-center text-[#777]">Loading products...</p>
+          ) : status === "error" ? (
+            <p className="py-[60px] text-center text-[#b91c1c]" role="alert">{error}</p>
+          ) : filteredProducts.length === 0 ? (
             <p className="py-[60px] text-center text-[16px] text-[#777] sm:py-[45px] sm:text-[14px] xs:py-[35px] xs:text-[13px]">
               No products match your filters.
             </p>

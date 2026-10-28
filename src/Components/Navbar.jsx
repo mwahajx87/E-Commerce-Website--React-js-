@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
-import { useCart } from "../Context/Cart.jsx";
+import { useCart } from "../Context/useCart";
 
 const Navbar = () => {
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleSearch = (event) => {
     event.preventDefault();
@@ -18,7 +19,7 @@ const Navbar = () => {
   return (
     <nav className="w-full bg-white px-[20px] py-[14px] max-[639px]:border-b max-[639px]:border-[#e5e5e5] max-[639px]:px-[16px] max-[639px]:py-[12px]">
       <div className="mx-auto flex max-w-[1280px] items-center gap-[18px] max-[639px]:gap-[10px]">
-        <button className="hidden h-[30px] w-[30px] shrink-0 items-center justify-center border-none bg-transparent p-0 text-[19px] max-[639px]:flex" aria-label="Open menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
+        <button type="button" className="hidden h-[30px] w-[30px] shrink-0 items-center justify-center border-none bg-transparent p-0 text-[19px] max-[639px]:flex" aria-label="Open menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>
           <i className="fa-solid fa-bars" />
         </button>
         <Link to="/" className="flex shrink-0 items-center">
@@ -33,9 +34,12 @@ const Navbar = () => {
           <Link to="/category" className="text-black no-underline">
             Shop
           </Link>
-          <span className="text-[#666]">On Sale</span>
-          <span className="text-[#666]">New Arrivals</span>
-          <span className="text-[#666]">Brands</span>
+          <Link to="/category?sort=newest" className="text-[#666] no-underline">
+            New Arrivals
+          </Link>
+          <Link to="/category?category=Fashion" className="text-[#666] no-underline">
+            Fashion
+          </Link>
         </div>
 
         <form className="relative ml-auto w-[430px] max-[639px]:hidden" onSubmit={handleSearch}>
@@ -50,7 +54,13 @@ const Navbar = () => {
         </form>
 
         <div className="flex items-center gap-[16px] max-[639px]:ml-auto max-[639px]:gap-[10px]">
-          <button className="hidden h-[30px] w-[30px] items-center justify-center border-none bg-transparent p-0 text-[17px] max-[639px]:flex" aria-label="Search" onClick={() => navigate("/category")}>
+          <button
+            type="button"
+            className="hidden h-[30px] w-[30px] items-center justify-center border-none bg-transparent p-0 text-[17px] max-[639px]:flex"
+            aria-label="Search"
+            aria-expanded={searchOpen}
+            onClick={() => setSearchOpen((open) => !open)}
+          >
             <i className="fa-solid fa-magnifying-glass" />
           </button>
           <Link
@@ -64,20 +74,34 @@ const Navbar = () => {
               </span>
             )}
           </Link>
-          <button
-            className="flex h-[32px] w-[32px] items-center justify-center rounded-full border-none bg-transparent p-0 text-[18px] text-black"
-            aria-label="Profile"
+          <Link
+            to="/account"
+            className="flex h-[32px] w-[32px] items-center justify-center rounded-full text-[18px] text-black no-underline"
+            aria-label="My account"
           >
             <i className="fa-regular fa-circle-user" />
-          </button>
+          </Link>
         </div>
       </div>
+      {searchOpen && (
+        <form className="mx-auto mt-3 max-w-[1280px] md:hidden" onSubmit={handleSearch}>
+          <input
+            type="search"
+            autoFocus
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search for products..."
+            aria-label="Search products"
+            className="h-[42px] w-full rounded-full bg-[#f0f0f0] px-4 text-sm outline-none focus:ring-1 focus:ring-black"
+          />
+        </form>
+      )}
       {menuOpen && (
         <div className="mx-auto mt-[12px] hidden max-w-[1280px] flex-col gap-[12px] border-t border-[#e5e5e5] pt-[12px] text-[13px] font-medium max-[639px]:flex">
           <Link to="/category" className="text-black no-underline" onClick={() => setMenuOpen(false)}>Shop</Link>
-          <span className="text-[#666]">On Sale</span>
-          <span className="text-[#666]">New Arrivals</span>
-          <span className="text-[#666]">Brands</span>
+          <Link to="/category?sort=newest" className="text-black no-underline" onClick={() => setMenuOpen(false)}>New Arrivals</Link>
+          <Link to="/category?category=Fashion" className="text-black no-underline" onClick={() => setMenuOpen(false)}>Fashion</Link>
+          <Link to="/category?category=Electronics" className="text-black no-underline" onClick={() => setMenuOpen(false)}>Electronics</Link>
         </div>
       )}
     </nav>

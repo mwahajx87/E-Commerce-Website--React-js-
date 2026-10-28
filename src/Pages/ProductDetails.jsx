@@ -1,43 +1,54 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Reviews from "../Components/Reviews";
 import ProductRecommendations from "../Components/ProductRecommendations";
-import cloth1 from "../assets/cloth1.png";
-
-import { useCart } from "../Context/Cart";
+import { useCart } from "../Context/useCart";
+import { useProducts } from "../Context/useProducts";
+import { formatCurrency } from "../utils/currency";
 
 const ProductDetails = () => {
-  const location = useLocation();
+  const { id } = useParams();
+  const { products, status, error } = useProducts();
+  const product = products.find((item) => item.id === id);
 
-  const product = location.state || {
-    id: 1,
-    name: "One Life Graphic T-shirt",
-    price: 260,
-    oldPrice: 300,
-    discount: 40,
-    rating: 4.5,
-    image: cloth1,
-  };
-
-  const [selectedColor, setSelectedColor] = useState("brown");
-  const [selectedSize, setSelectedSize] = useState("Large");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [mainImage, setMainImage] = useState(product.image);
+  const mainImage = product?.image || "";
+  const colors = product?.colors || [];
+  const sizes = product?.sizes || [];
+  const activeColor = colors.includes(selectedColor)
+    ? selectedColor
+    : colors[0] || "";
+  const activeSize = sizes.includes(selectedSize)
+    ? selectedSize
+    : sizes[0] || "";
 
   const { addToCart } = useCart();
 
-  const increaseQuantity = () => setQuantity((prev) => prev + 1);
+  const increaseQuantity = () =>
+    setQuantity((prev) => Math.min(prev + 1, product?.stock ?? prev + 1));
   const decreaseQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleAddToCart = () => {
     addToCart({
       ...product,
-      color: selectedColor,
-      size: selectedSize,
+      ...(activeColor ? { color: activeColor } : {}),
+      ...(activeSize ? { size: activeSize } : {}),
       quantity,
     });
   };
+
+  if (status === "loading") {
+    return <p className="mx-auto max-w-[1240px] px-5 py-16">Loading product...</p>;
+  }
+  if (status === "error") {
+    return <p className="mx-auto max-w-[1240px] px-5 py-16 text-red-700" role="alert">{error}</p>;
+  }
+  if (!product) {
+    return <p className="mx-auto max-w-[1240px] px-5 py-16">Product not found.</p>;
+  }
 
   return (
     <main className="mx-auto w-full max-w-[1240px] px-[20px] pb-[60px] pt-[25px] box-border max-[639px]:px-[16px] max-[639px]:pb-[36px] max-[639px]:pt-[16px]">
@@ -54,10 +65,10 @@ const ProductDetails = () => {
         </Link>
         <span>/</span>
         <Link
-          to="/category?category=men"
+          to={`/category?search=${encodeURIComponent(product.category)}`}
           className="text-[#777] no-underline hover:text-[#111]"
         >
-          Men
+          {product.category}
         </Link>
         <span>/</span>
         <strong className="font-medium text-[#111]">{product.name}</strong>
@@ -66,19 +77,17 @@ const ProductDetails = () => {
       <section className="grid grid-cols-2 gap-[55px] align-start max-[639px]:grid-cols-1 max-[639px]:gap-[20px]">
         <div className="grid grid-cols-[150px_1fr] gap-[14px] max-[639px]:flex max-[639px]:flex-col-reverse max-[639px]:gap-[8px]">
           <div className="flex flex-col gap-[14px] max-[639px]:flex-row max-[639px]:gap-[8px]">
-            {[product.image, product.image, product.image].map((img, index) => (
-              <button
+            {[product.image].map((img, index) => (
+              <div
                 key={index}
-                type="button"
-                className={`h-[165px] w-full overflow-hidden rounded-[12px] border bg-[#f2f2f2] p-0 max-[639px]:h-[62px] max-[639px]:w-[62px] max-[639px]:rounded-[10px] ${mainImage === img && index === 0 ? "border-2 border-[#111]" : "border-transparent"}`}
-                onClick={() => setMainImage(img)}
+                className={`h-[165px] w-full overflow-hidden rounded-[12px] border bg-[#f2f2f2] max-[639px]:h-[62px] max-[639px]:w-[62px] max-[639px]:rounded-[10px] ${mainImage === img && index === 0 ? "border-2 border-[#111]" : "border-transparent"}`}
               >
                 <img
                   src={img}
                   alt={product.name}
                   className="h-full w-full object-contain block"
                 />
-              </button>
+              </div>
             ))}
           </div>
 
@@ -96,21 +105,14 @@ const ProductDetails = () => {
             {product.name.toUpperCase()}
           </h1>
 
-          <div className="mb-[12px] flex items-center gap-[9px]">
-            <span className="text-[20px] tracking-[2px] text-[#ffc633] max-[639px]:text-[16px]">
-              ★★★★★
-            </span>
-            <span className="text-[14px] text-[#333]">{product.rating}/5</span>
-          </div>
-
           <div className="flex items-center gap-[10px]">
             <span className="text-[27px] font-bold text-[#111] max-[639px]:text-[20px]">
-              ${product.price}
+              {formatCurrency(product.price)}
             </span>
             {product.oldPrice && (
               <>
                 <span className="text-[15px] text-[#999] line-through max-[639px]:text-[14px]">
-                  ${product.oldPrice}
+                  {formatCurrency(product.oldPrice)}
                 </span>
                 <span className="rounded-full bg-[#ffe5e5] px-[10px] py-[4px] text-[11px] font-medium text-[#f33] max-[639px]:px-[8px] max-[639px]:py-[3px] max-[639px]:text-[10px]">
                   -{product.discount}%
@@ -120,62 +122,65 @@ const ProductDetails = () => {
           </div>
 
           <p className="mt-[15px] max-w-[570px] text-[14px] leading-[1.65] text-[#666] max-[639px]:text-[11px]">
-            This graphic t-shirt which is perfect for any occasion. Crafted from
-            a soft and breathable fabric, it offers exceptional comfort and
-            style.
+            {product.description || "A quality product selected from our catalog."}
           </p>
 
           <div className="my-[22px] h-[1px] w-full bg-[#e5e5e5]" />
 
-          <div className="mb-0">
-            <p className="mb-[12px] text-[14px] text-[#777]">Select Colors</p>
-            <div className="flex items-center gap-[12px]">
-              <button
-                type="button"
-                aria-label="Brown"
-                className={`flex h-[37px] w-[37px] items-center justify-center rounded-full border-none text-transparent ${selectedColor === "brown" ? "text-white" : ""} bg-[#4b3a30]`}
-                onClick={() => setSelectedColor("brown")}
-              >
-                {selectedColor === "brown" && "✓"}
-              </button>
-              <button
-                type="button"
-                aria-label="Green"
-                className={`flex h-[37px] w-[37px] items-center justify-center rounded-full border-none text-transparent ${selectedColor === "green" ? "text-white" : ""} bg-[#31523b]`}
-                onClick={() => setSelectedColor("green")}
-              >
-                {selectedColor === "green" && "✓"}
-              </button>
-              <button
-                type="button"
-                aria-label="Navy"
-                className={`flex h-[37px] w-[37px] items-center justify-center rounded-full border-none text-transparent ${selectedColor === "navy" ? "text-white" : ""} bg-[#273c56]`}
-                onClick={() => setSelectedColor("navy")}
-              >
-                {selectedColor === "navy" && "✓"}
-              </button>
+          {colors.length > 0 && (
+            <div className="mb-0">
+              <p className="mb-[12px] text-[14px] text-[#777]">Available colors</p>
+              <div className="flex flex-wrap items-center gap-[10px]">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    aria-pressed={activeColor === color}
+                    className={`rounded-full border px-4 py-2 text-[13px] ${
+                      activeColor === color
+                        ? "border-black bg-black text-white"
+                        : "border-[#ddd] bg-white text-[#555]"
+                    }`}
+                    onClick={() => setSelectedColor(color)}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="my-[22px] h-[1px] w-full bg-[#e5e5e5]" />
+          {sizes.length > 0 && (
+            <>
+              {colors.length > 0 && (
+                <div className="my-[22px] h-[1px] w-full bg-[#e5e5e5]" />
+              )}
+              <div className="mb-0">
+                <p className="mb-[12px] text-[14px] text-[#777]">Available sizes</p>
+                <div className="flex flex-wrap items-center gap-[10px]">
+                  {sizes.map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      aria-pressed={activeSize === size}
+                      className={`rounded-full border px-[20px] py-[11px] text-[13px] ${
+                        activeSize === size
+                          ? "border-[#111] bg-[#111] text-white"
+                          : "border-transparent bg-[#f3f3f3] text-[#555]"
+                      }`}
+                      onClick={() => setSelectedSize(size)}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
-          <div className="mb-0">
-            <p className="mb-[12px] text-[14px] text-[#777]">Choose Size</p>
-            <div className="flex flex-wrap items-center gap-[10px]">
-              {["Small", "Medium", "Large", "X-Large"].map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  className={`rounded-full border-none px-[20px] py-[11px] text-[13px] ${selectedSize === size ? "bg-[#111] text-white" : "bg-[#f3f3f3] text-[#555]"}`}
-                  onClick={() => setSelectedSize(size)}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="my-[22px] h-[1px] w-full bg-[#e5e5e5]" />
+          {(colors.length > 0 || sizes.length > 0) && (
+            <div className="my-[22px] h-[1px] w-full bg-[#e5e5e5]" />
+          )}
 
           <div className="flex items-center gap-[12px] max-[639px]:gap-[8px]">
             <div className="flex items-center gap-[14px] rounded-full bg-[#f3f3f3] px-[14px] py-[6px]">
@@ -191,6 +196,7 @@ const ProductDetails = () => {
                 type="button"
                 className="border-none bg-transparent text-[16px] text-black"
                 onClick={increaseQuantity}
+                disabled={quantity >= product.stock}
               >
                 +
               </button>
@@ -199,15 +205,16 @@ const ProductDetails = () => {
             <button
               type="button"
               onClick={handleAddToCart}
+              disabled={product.stock < 1}
               className="h-[46px] rounded-full bg-black px-[30px] text-[15px] font-medium text-white max-[639px]:h-[40px] max-[639px]:flex-1 max-[639px]:text-[12px]"
             >
-              Add to Cart
+              {product.stock < 1 ? "Out of Stock" : "Add to Cart"}
             </button>
           </div>
         </div>
       </section>
 
-      <Reviews />
+      <Reviews product={product} />
       <ProductRecommendations />
     </main>
   );

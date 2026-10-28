@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useCart } from "../Context/Cart.jsx";
+import { useCart } from "../Context/useCart";
+import { useCustomerAuth } from "../Context/useCustomerAuth";
+import { submitOrder } from "../services/storeApi";
+import { formatCurrency } from "../utils/currency";
 
 const Cart = () => {
   const {
@@ -8,15 +11,56 @@ const Cart = () => {
     removeFromCart,
     increaseQuantity,
     decreaseQuantity,
+    clearCart,
     cartTotal,
   } = useCart();
-  const [promoCode, setPromoCode] = useState("");
-  const [promoMessage, setPromoMessage] = useState("");
+  const { user } = useCustomerAuth();
+  const [customerNameEdited, setCustomerNameEdited] = useState(false);
+  const [customer, setCustomer] = useState({
+    customerName: "",
+    customerEmail: "",
+    customerAddress: "",
+    paymentMethod: "Cash on delivery",
+  });
+  const [checkoutStatus, setCheckoutStatus] = useState("idle");
   const [checkoutMessage, setCheckoutMessage] = useState("");
+  const tax = Math.round(cartTotal * 0.05);
+  const deliveryFee = cartTotal > 0 && cartTotal < 5000 ? 250 : 0;
+  const total = cartTotal + tax + deliveryFee;
+  const quantityInOtherVariants = (item) =>
+    cart.reduce(
+      (quantity, otherItem) =>
+        otherItem.id === item.id &&
+        (otherItem.color !== item.color || otherItem.size !== item.size)
+          ? quantity + otherItem.quantity
+          : quantity,
+      0,
+    );
 
-  const discount = Math.round(cartTotal * 0.2);
-  const deliveryFee = cart.length > 0 ? 15 : 0;
-  const total = cartTotal - discount + deliveryFee;
+  const handleCheckout = async (event) => {
+    event.preventDefault();
+    setCheckoutStatus("submitting");
+    setCheckoutMessage("");
+    try {
+      const order = await submitOrder({
+        ...customer,
+        customerName: customer.customerName || user?.name || "",
+        customerEmail: user?.email || customer.customerEmail,
+        items: cart.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          color: item.color,
+          size: item.size,
+        })),
+      });
+      clearCart();
+      setCheckoutStatus("success");
+      setCheckoutMessage(`Order ${order.id} placed successfully.`);
+    } catch (error) {
+      setCheckoutStatus("error");
+      setCheckoutMessage(error.message);
+    }
+  };
 
   return (
     <div className="mx-auto w-full max-w-[1240px] px-[20px] pb-[70px] pt-[25px] box-border max-[639px]:px-[16px] max-[639px]:pb-[50px] max-[639px]:pt-[20px]">
@@ -34,6 +78,14 @@ const Cart = () => {
 
       {cart.length === 0 ? (
         <div className="px-[20px] py-[60px] text-center">
+          {checkoutMessage && (
+            <p
+              className={`mb-[16px] ${checkoutStatus === "error" ? "text-red-700" : "text-green-700"}`}
+              role={checkoutStatus === "error" ? "alert" : "status"}
+            >
+              {checkoutMessage}
+            </p>
+          )}
           <p className="mb-[20px] text-[#777]">Your cart is empty.</p>
           <Link
             to="/"
@@ -45,10 +97,12 @@ const Cart = () => {
       ) : (
         <div className="grid grid-cols-[1fr_380px] gap-[30px] align-start max-[639px]:grid-cols-1 max-[639px]:gap-[20px]">
           <div className="rounded-[20px] border border-[#e5e5e5] p-[20px] max-[639px]:rounded-[18px] max-[639px]:p-[14px]">
-            {cart.map((item, index) => (
+            {cart.map((item, index) => {
+              const otherVariantQuantity = quantityInOtherVariants(item);
+              return (
               <div
                 className="flex gap-[16px] border-b border-[#eee] py-[16px] last:border-b-0 max-[639px]:gap-[12px] max-[639px]:py-[14px]"
-                key={index}
+                key={`${item.id}-${item.color || ""}-${item.size || ""}-${index}`}
               >
                 <img
                   src={item.image}
@@ -75,6 +129,8 @@ const Cart = () => {
                     </div>
 
                     <button
+                      type="button"
+                      aria-label={`Remove ${item.name} from cart`}
                       className="border-none bg-transparent text-[16px] max-[639px]:text-[15px]"
                       onClick={() =>
                         removeFromCart(item.id, item.color, item.size)
@@ -86,11 +142,13 @@ const Cart = () => {
 
                   <div className="mt-[10px] flex items-center justify-between">
                     <span className="text-[18px] font-bold text-[#111] max-[639px]:text-[22px]">
-                      ${item.price}
+                      {formatCurrency(item.price)}
                     </span>
 
                     <div className="flex items-center gap-[14px] rounded-full bg-[#f3f3f3] px-[14px] py-[6px] max-[639px]:gap-[14px] max-[639px]:px-[12px] max-[639px]:py-[5px]">
                       <button
+                        type="button"
+                        aria-label={`Decrease quantity of ${item.name}`}
                         className="border-none bg-transparent text-[16px]"
                         onClick={() =>
                           decreaseQuantity(item.id, item.color, item.size)
@@ -100,10 +158,15 @@ const Cart = () => {
                       </button>
                       <span>{item.quantity}</span>
                       <button
+                        type="button"
                         className="border-none bg-transparent text-[16px]"
                         onClick={() =>
                           increaseQuantity(item.id, item.color, item.size)
                         }
+                        disabled={
+                          item.quantity + otherVariantQuantity >= item.stock
+                        }
+                        aria-label={`Increase quantity of ${item.name}`}
                       >
                         +
                       </button>
@@ -111,7 +174,8 @@ const Cart = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="rounded-[20px] border border-[#e5e5e5] p-[25px] max-[639px]:rounded-[18px] max-[639px]:p-[18px]">
@@ -121,47 +185,84 @@ const Cart = () => {
 
             <div className="mb-[14px] flex items-center justify-between text-[15px] text-[#444] sm:text-[13px]">
               <span>Subtotal</span>
-              <span>${cartTotal}</span>
-            </div>
-
-            <div className="mb-[14px] flex items-center justify-between text-[15px] text-[#ff3333] sm:text-[13px]">
-              <span>Discount (-20%)</span>
-              <span>-${discount}</span>
+              <span>{formatCurrency(cartTotal)}</span>
             </div>
 
             <div className="mb-[14px] flex items-center justify-between text-[15px] text-[#444] sm:text-[13px]">
               <span>Delivery Fee</span>
-              <span>${deliveryFee}</span>
+              <span>{formatCurrency(deliveryFee)}</span>
+            </div>
+
+            <div className="mb-[14px] flex items-center justify-between text-[15px] text-[#444] sm:text-[13px]">
+              <span>Tax (5%)</span>
+              <span>{formatCurrency(tax)}</span>
             </div>
 
             <div className="border-t border-[#eee] pt-[14px] text-[18px] font-bold text-[#111] sm:text-[16px]">
               <div className="flex items-center justify-between">
                 <span>Total</span>
-                <span>${total}</span>
+                <span>{formatCurrency(total)}</span>
               </div>
             </div>
 
-            <div className="my-[20px] flex gap-[10px] max-[639px]:my-[20px]">
-              <div className="relative flex-1">
-                <i className="fa-regular fa-tag absolute left-[16px] top-1/2 -translate-y-1/2 text-[14px] text-[#999]"></i>
-                <input
-                  type="text"
-                  placeholder="Add promo code"
-                  value={promoCode}
-                  onChange={(event) => setPromoCode(event.target.value)}
-                  className="w-full rounded-full border-none bg-[#f3f3f3] px-[40px] py-[12px] text-[13px] outline-none"
-                />
+            <form onSubmit={handleCheckout} className="mt-[20px] space-y-[10px]">
+              <input
+                type="text"
+                required
+                maxLength={120}
+                placeholder="Full name"
+                value={
+                  customerNameEdited
+                    ? customer.customerName
+                    : customer.customerName || user?.name || ""
+                }
+                onChange={(event) => {
+                  setCustomerNameEdited(true);
+                  setCustomer({ ...customer, customerName: event.target.value });
+                }}
+                className="w-full rounded-[10px] border border-[#ddd] px-[12px] py-[11px] text-[13px] outline-none"
+              />
+              <input
+                type="email"
+                required
+                maxLength={254}
+                placeholder="Email address"
+                value={user?.email || customer.customerEmail}
+                onChange={(event) =>
+                  setCustomer({ ...customer, customerEmail: event.target.value })
+                }
+                readOnly={Boolean(user)}
+                className="w-full rounded-[10px] border border-[#ddd] px-[12px] py-[11px] text-[13px] outline-none"
+              />
+              <textarea
+                required
+                maxLength={500}
+                placeholder="Delivery address"
+                value={customer.customerAddress}
+                onChange={(event) =>
+                  setCustomer({ ...customer, customerAddress: event.target.value })
+                }
+                className="w-full resize-y rounded-[10px] border border-[#ddd] px-[12px] py-[11px] text-[13px] outline-none"
+              />
+              <div className="rounded-[10px] border border-[#ddd] bg-[#f7f7f7] px-[12px] py-[11px] text-[13px] text-[#555]">
+                Payment: Cash on delivery
               </div>
-              <button className="rounded-full border-none bg-black px-[20px] py-[12px] text-[13px] text-white" onClick={() => setPromoMessage(promoCode.trim() ? "Promo code applied." : "Enter a promo code.")}>
-                Apply
+              <button
+                type="submit"
+                disabled={checkoutStatus === "submitting"}
+                className="w-full rounded-full border-none bg-black px-[15px] py-[15px] text-[15px] font-medium text-white disabled:opacity-60 max-[639px]:py-[16px]"
+              >
+                {checkoutStatus === "submitting" ? "Placing order..." : "Place Order →"}
               </button>
-            </div>
-            {promoMessage && <p className="-mt-[12px] mb-[14px] text-[12px] text-[#666]">{promoMessage}</p>}
-
-            <button className="w-full rounded-full border-none bg-black px-[15px] py-[15px] text-[15px] font-medium text-white max-[639px]:py-[16px]" onClick={() => setCheckoutMessage("Checkout is ready for your order.")}>
-              Go to Checkout →
-            </button>
-            {checkoutMessage && <p className="mt-[10px] text-center text-[12px] text-[#666]">{checkoutMessage}</p>}
+            </form>
+            {checkoutMessage && (
+              <p
+                className={`mt-[10px] text-center text-[12px] ${checkoutStatus === "error" ? "text-red-700" : "text-[#166534]"}`}
+                role={checkoutStatus === "error" ? "alert" : "status"}
+              >
+                {checkoutMessage}
+              </p>
+            )}
           </div>
         </div>
       )}

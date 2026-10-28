@@ -1,19 +1,6 @@
 import { Link } from "react-router-dom";
-import { useCart } from "../Context/Cart.jsx";
-
-const renderStars = (rating) => {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    if (rating >= i) {
-      stars.push("★");
-    } else if (rating >= i - 0.5) {
-      stars.push("★");
-    } else {
-      stars.push("<span style='opacity:0.3'>★</span>");
-    }
-  }
-  return stars.join("");
-};
+import { useCart } from "../Context/useCart";
+import { formatCurrency } from "../utils/currency";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
@@ -31,7 +18,7 @@ const ProductCard = ({ product }) => {
             alt={product.name}
             className="h-full w-full object-contain block hover:scale-[1.04] transition-transform duration-300"
           />
-          <button
+          {product.stock > 0 && <button
             type="button"
             className="pointer-events-none absolute bottom-[12px] left-1/2 z-10 hidden -translate-x-1/2 rounded-full border-none bg-black px-[18px] py-[9px] text-[12px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 md:block "
             onClick={(event) => {
@@ -42,24 +29,16 @@ const ProductCard = ({ product }) => {
             aria-label={`Add ${product.name} to cart`}
           >
             Add to Cart
-          </button>
+          </button>}
         </div>
 
         <h3 className="mt-[12px] text-[15px] font-bold text-[#111] max-[639px]:mt-[8px] max-[639px]:line-clamp-2 max-[639px]:text-[12px]">
           {product.name}
         </h3>
 
-        <div className="mt-[8px] flex items-center gap-[8px] text-[12px] text-[#555] max-[639px]:mt-[4px] max-[639px]:gap-[4px] max-[639px]:text-[10px]">
-          <span
-            className="text-[14px] tracking-[1px] text-[#ffc633] max-[639px]:text-[11px] max-[639px]:tracking-0"
-            dangerouslySetInnerHTML={{ __html: renderStars(product.rating) }}
-          />
-          <span>{product.rating}/5</span>
-        </div>
-
         <div className="mt-[8px] flex items-center gap-[8px] max-[639px]:mt-[4px] max-[639px]:gap-[5px]">
           <span className="text-[18px] font-bold text-[#111] max-[639px]:text-[14px]">
-            ${product.price}
+            {formatCurrency(product.price)}
           </span>
 
           {product.oldPrice && (

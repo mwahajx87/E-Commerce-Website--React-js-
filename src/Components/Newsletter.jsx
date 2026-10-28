@@ -1,24 +1,27 @@
 import { useState } from "react";
+import { subscribeToNewsletter } from "../services/storeApi";
 
 const Newsletter = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isError, setIsError] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!email) {
-      setMessage("Please enter your email.");
-      return;
+    setMessage("");
+    setIsError(false);
+    setIsSubmitting(true);
+    try {
+      const result = await subscribeToNewsletter(email);
+      setMessage(result.message);
+      setEmail("");
+    } catch (error) {
+      setIsError(true);
+      setMessage(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (!email.includes("@")) {
-      setMessage("Please enter a valid email.");
-      return;
-    }
-
-    setMessage("You're subscribed successfully!");
-    setEmail("");
   };
 
   return (
@@ -35,6 +38,8 @@ const Newsletter = () => {
             <span className="text-[18px] text-[#777]">✉</span>
             <input
               type="email"
+              required
+              maxLength={254}
               placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -44,13 +49,14 @@ const Newsletter = () => {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="mt-[12px] h-[56px] w-full rounded-full border-none bg-white text-[16px] font-semibold text-black max-[639px]:h-[42px] max-[639px]:text-[12px]"
           >
-            Subscribe to Newsletter
+            {isSubmitting ? "Subscribing..." : "Subscribe to Newsletter"}
           </button>
 
           {message && (
-            <p className="mt-[10px] text-[12px] text-white">{message}</p>
+            <p className={`mt-[10px] text-[12px] ${isError ? "text-red-200" : "text-white"}`} role={isError ? "alert" : "status"}>{message}</p>
           )}
         </form>
       </div>

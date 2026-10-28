@@ -1,9 +1,14 @@
+import { useNavigate } from "react-router-dom";
 import casual from "../assets/casual.png";
 import formal from "../assets/formal.png";
 import party from "../assets/party.png";
 import gym from "../assets/gym.png";
 
 const BrowseStyle = () => {
+  const navigate = useNavigate();
+  const onNavigate = (style) =>
+    navigate(`/category?style=${encodeURIComponent(style)}`);
+
   return (
     <section className="py-6 sm:py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,7 +20,15 @@ const BrowseStyle = () => {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6">
             {/* Casual Card (1/3) */}
             <div
-              onClick={() => onNavigate("category", { dressStyle: "casual" })}
+              onClick={() => onNavigate("casual")}
+              role="link"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onNavigate("casual");
+                }
+              }}
               className="md:col-span-4 bg-white rounded-2xl overflow-hidden relative h-56 sm:h-72 cursor-pointer group shadow-xs hover:shadow-md transition-all"
               id="style-card-casual"
             >
@@ -31,7 +44,15 @@ const BrowseStyle = () => {
 
             {/* Formal Card (2/3) */}
             <div
-              onClick={() => onNavigate("category", { dressStyle: "formal" })}
+              onClick={() => onNavigate("formal")}
+              role="link"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onNavigate("formal");
+                }
+              }}
               className="md:col-span-8 bg-white rounded-2xl overflow-hidden relative h-56 sm:h-72 cursor-pointer group shadow-xs hover:shadow-md transition-all"
               id="style-card-formal"
             >
@@ -47,7 +68,15 @@ const BrowseStyle = () => {
 
             {/* Party Card (2/3) */}
             <div
-              onClick={() => onNavigate("category", { dressStyle: "party" })}
+              onClick={() => onNavigate("party")}
+              role="link"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onNavigate("party");
+                }
+              }}
               className="md:col-span-8 bg-white rounded-2xl overflow-hidden relative h-56 sm:h-72 cursor-pointer group shadow-xs hover:shadow-md transition-all"
               id="style-card-party"
             >
@@ -63,7 +92,15 @@ const BrowseStyle = () => {
 
             {/* Gym Card (1/3) */}
             <div
-              onClick={() => onNavigate("category", { dressStyle: "gym" })}
+              onClick={() => onNavigate("gym")}
+              role="link"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onNavigate("gym");
+                }
+              }}
               className="md:col-span-4 bg-white rounded-2xl overflow-hidden relative h-56 sm:h-72 cursor-pointer group shadow-xs hover:shadow-md transition-all"
               id="style-card-gym"
             >

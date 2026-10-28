@@ -1,213 +1,243 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { useCustomerAuth } from "../Context/useCustomerAuth";
+import { getProductReviews, submitProductReview } from "../services/storeApi";
 
-const reviews = [
-  {
-    name: "Samantha D.",
-    rating: 5,
-    text: '"I absolutely love this t-shirt! The design is unique and the fabric feels so comfortable. As a fellow designer, I appreciate the attention to detail. It\'s become my favorite go-to shirt."',
-    date: "Posted on August 14, 2023",
-  },
-  {
-    name: "Alex M.",
-    rating: 5,
-    text: '"The t-shirt exceeded my expectations! The colors are vibrant and the print quality is top-notch. Being a UI/UX designer myself, I\'m quite picky about aesthetics, and this t-shirt definitely gets a thumbs up from me."',
-    date: "Posted on August 15, 2023",
-  },
-  {
-    name: "Ethan R.",
-    rating: 4.5,
-    text: '"This t-shirt is a must-have for anyone who appreciates good design. The minimalist yet stylish pattern caught my eye, and the fit is perfect. I can see the designer\'s touch in every aspect of this shirt."',
-    date: "Posted on August 16, 2023",
-  },
-  {
-    name: "Olivia P.",
-    rating: 4,
-    text: '"As a UI/UX enthusiast, I value simplicity and functionality. This t-shirt not only represents those principles but also feels great to wear. It\'s evident that the designer poured their creativity into making this shirt stand out."',
-    date: "Posted on August 17, 2023",
-  },
-  {
-    name: "Liam K.",
-    rating: 4,
-    text: "\"This shirt is a fusion of comfort and creativity. The fabric is soft, and the design speaks volumes about the designer's skill. It's like wearing a piece of art that reflects my passion for both design and fashion.\"",
-    date: "Posted on August 18, 2023",
-  },
-  {
-    name: "Ava H.",
-    rating: 4.5,
-    text: "\"I'm not just wearing a t-shirt; I'm wearing a piece of design philosophy. The intricate details and thoughtful layout of the design make this shirt a conversation starter.\"",
-    date: "Posted on August 19, 2023",
-  },
-];
-
-const Stars = ({ rating }) => {
-  return (
-    <div className="flex gap-1 text-[18px]">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <span
-          key={star}
-          className={
-            star <= Math.floor(rating)
-              ? "text-[#ffc633]"
-              : "text-[#ffc633] opacity-35"
-          }
-        >
-          ★
-        </span>
-      ))}
-    </div>
-  );
-};
-
-const Reviews = () => {
+const Reviews = ({ product }) => {
+  const { user } = useCustomerAuth();
   const [activeTab, setActiveTab] = useState("reviews");
-  const [showMore, setShowMore] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [status, setStatus] = useState("loading");
+  const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [rating, setRating] = useState("5");
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const displayedReviews = showMore
-    ? [...reviews, ...reviews.slice(0, 3)]
-    : reviews.slice(0, 3);
+  const loadReviews = useCallback(async () => {
+    setStatus("loading");
+    setError("");
+    try {
+      setReviews(await getProductReviews(product.id));
+      setStatus("ready");
+    } catch (requestError) {
+      setError(requestError.message);
+      setStatus("error");
+    }
+  }, [product.id]);
+
+  useEffect(() => {
+    let active = true;
+    getProductReviews(product.id)
+      .then((productReviews) => {
+        if (!active) return;
+        setReviews(productReviews);
+        setStatus("ready");
+      })
+      .catch((requestError) => {
+        if (!active) return;
+        setError(requestError.message);
+        setStatus("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [product.id]);
+
+  const averageRating = useMemo(() => {
+    if (reviews.length === 0) return null;
+    return (
+      reviews.reduce((total, review) => total + review.rating, 0) /
+      reviews.length
+    ).toFixed(1);
+  }, [reviews]);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await submitProductReview(product.id, {
+        rating: Number(rating),
+        comment,
+      });
+      setComment("");
+      setShowForm(false);
+      await loadReviews();
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <section className="w-full max-w-[1280px] mx-auto px-[20px] pb-[60px] pt-[28px] box-border max-[639px]:px-0 max-[639px]:pb-[28px] max-[639px]:pt-[20px]">
-      <div className="w-full flex justify-between overflow-hidden border-b border-[#e5e5e5] mb-[26px] max-[639px]:mb-[14px]">
-        <button
-          type="button"
-          className={`relative border-none bg-transparent py-[18px] px-[10px] font-medium text-[15px] cursor-pointer transition-colors max-[639px]:px-0 max-[639px]:py-[12px] max-[639px]:text-[10px] ${
-            activeTab === "details"
-              ? "text-[#111] font-bold"
-              : "text-[#777] hover:text-[#111]"
-          } ${activeTab === "details" ? "after:content-[''] after:absolute after:bottom-[-1px] after:left-0 after:w-full after:h-[2px] after:bg-[#111]" : ""}`}
-          onClick={() => setActiveTab("details")}
-        >
-          Product Details
-        </button>
-
-        <button
-          type="button"
-          className={`relative border-none bg-transparent py-[18px] px-[10px] font-medium text-[15px] cursor-pointer transition-colors max-[639px]:px-0 max-[639px]:py-[12px] max-[639px]:text-[10px] ${
-            activeTab === "reviews"
-              ? "text-[#111] font-bold"
-              : "text-[#777] hover:text-[#111]"
-          } ${activeTab === "reviews" ? "after:content-[''] after:absolute after:bottom-[-1px] after:left-0 after:w-full after:h-[2px] after:bg-[#111]" : ""}`}
-          onClick={() => setActiveTab("reviews")}
-        >
-          Rating &amp; Reviews
-        </button>
-
-        <button
-          type="button"
-          className={`relative border-none bg-transparent py-[18px] px-[10px] font-medium text-[15px] cursor-pointer transition-colors max-[639px]:px-0 max-[639px]:py-[12px] max-[639px]:text-[10px] ${
-            activeTab === "faq"
-              ? "text-[#111] font-bold"
-              : "text-[#777] hover:text-[#111]"
-          } ${activeTab === "faq" ? "after:content-[''] after:absolute after:bottom-[-1px] after:left-0 after:w-full after:h-[2px] after:bg-[#111]" : ""}`}
-          onClick={() => setActiveTab("faq")}
-        >
-          FAQs
-        </button>
+    <section className="mx-auto w-full max-w-[1280px] px-5 pb-14 pt-7">
+      <div className="mb-6 flex justify-between border-b border-[#e5e5e5]">
+        {[
+          ["details", "Product Details"],
+          ["reviews", "Rating & Reviews"],
+          ["faq", "FAQs"],
+        ].map(([tab, label]) => (
+          <button
+            key={tab}
+            type="button"
+            className={`border-0 border-b-2 bg-transparent px-2 py-4 text-sm ${
+              activeTab === tab
+                ? "border-black font-bold text-black"
+                : "border-transparent text-[#777]"
+            }`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {activeTab === "details" && (
-        <div className="max-w-[850px] mx-auto my-[35px]">
-          <h2 className="text-[25px] font-bold mb-[18px] text-[#111]">
-            Product Details
-          </h2>
-          <p className="text-[#666] text-[14px] leading-[1.7] mb-[12px]">
-            This graphic t-shirt is designed for everyday comfort and style.
-            Crafted from soft and breathable fabric, it offers a comfortable fit
-            while maintaining a modern look.
+        <div className="mx-auto max-w-[850px] py-6">
+          <h2 className="mb-3 text-xl font-bold text-black">About this product</h2>
+          <p className="text-sm leading-7 text-[#666]">
+            {product.description || "No additional product details are available."}
           </p>
-          <p className="text-[#666] text-[14px] leading-[1.7] mb-[12px]">
-            Perfect for casual occasions and easy to pair with jeans, shorts, or
-            other everyday outfits.
+          <p className="mt-4 text-sm text-[#666]">
+            Category: {product.category}. Available stock: {product.stock}.
           </p>
         </div>
       )}
 
       {activeTab === "reviews" && (
         <div>
-          <div className="flex justify-between items-center mb-[22px] max-[639px]:mb-[12px]">
-            <h2 className="m-0 text-[40px] font-black tracking-[-1.1px] text-[#111] max-[639px]:text-[14px] max-[639px]:tracking-0">
-              All Reviews{" "}
-              <span className="text-[#777] text-[22px] font-medium">(451)</span>
-            </h2>
-
-            <div className="flex items-center gap-[12px]">
-              <button className="w-[44px] h-[44px] rounded-full bg-[#f3f3f3] border-none cursor-pointer text-[#111] text-[15px] transition-colors hover:bg-[#e8e8e8] max-[639px]:h-[26px] max-[639px]:w-[26px] max-[639px]:text-[10px]">
-                <i className="fa-solid fa-sliders"></i>
-              </button>
-
-              <button className="hidden h-[44px] px-[18px] rounded-full bg-[#f3f3f3] border-none cursor-pointer text-[#111] text-[14px] items-center gap-[10px] transition-colors hover:bg-[#e8e8e8] sm:flex">
-                Latest
-                <i className="fa-solid fa-chevron-down text-[10px]"></i>
-              </button>
-
-              <button className="h-[44px] px-[22px] rounded-full bg-[#111] border-none cursor-pointer text-white text-[14px] font-semibold transition-colors hover:bg-[#222] max-[639px]:h-[28px] max-[639px]:px-[12px] max-[639px]:text-[9px]">
-                Write a Review
-              </button>
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-black text-black">
+                Customer reviews
+              </h2>
+              {averageRating ? (
+                <p className="mt-1 text-sm text-[#666]">
+                  ★ {averageRating} out of 5 · {reviews.length}{" "}
+                  {reviews.length === 1 ? "review" : "reviews"}
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-[#666]">No reviews yet.</p>
+              )}
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-[20px] mb-[30px] max-[639px]:grid-cols-1 max-[639px]:gap-[10px] max-[639px]:mb-[18px]">
-            {displayedReviews.map((review, index) => (
-              <div
-                className="w-full border border-[#e7e7e7] rounded-[18px] p-[20px] bg-white max-[639px]:rounded-[10px] max-[639px]:p-[12px]"
-                key={index}
+            {user ? (
+              <button
+                type="button"
+                onClick={() => setShowForm((open) => !open)}
+                className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white"
               >
-                <div className="flex justify-between items-start mb-[12px]">
-                  <div className="max-[639px]:scale-[0.78] max-[639px]:origin-left">
-                    <Stars rating={review.rating} />
-                  </div>
-                  <button className="border-none bg-transparent text-[#999] text-[18px] cursor-pointer">
-                    •••
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-[8px] mt-[12px] mb-[18px]">
-                  <span className="text-[18px] font-bold text-[#111] max-[639px]:text-[11px]">
-                    {review.name}
-                  </span>
-                  <span className="flex justify-center items-center w-[18px] h-[18px] rounded-full bg-[#00b341] text-white text-[10px] font-bold max-[639px]:h-[12px] max-[639px]:w-[12px] max-[639px]:text-[7px]">
-                    ✓
-                  </span>
-                </div>
-
-                <p className="m-0 text-[#555] text-[15px] leading-[1.7] mb-[16px] max-[639px]:text-[9px] max-[639px]:leading-[1.45] max-[639px]:mb-[10px]">
-                  {review.text}
-                </p>
-
-                <p className="m-0 text-[#999] text-[12px] max-[639px]:text-[9px]">
-                  {review.date}
-                </p>
-              </div>
-            ))}
+                {showForm ? "Cancel" : "Write a Review"}
+              </button>
+            ) : (
+              <Link
+                to="/account"
+                className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white no-underline"
+              >
+                Sign in to review
+              </Link>
+            )}
           </div>
 
-          {!showMore && (
-            <button
-              className="block mx-auto mt-[30px] px-[28px] py-[13px] border border-[#d9d9d9] rounded-full bg-white text-[#111] text-[14px] font-semibold cursor-pointer transition-colors hover:bg-[#f5f5f5] max-[639px]:mt-[12px] max-[639px]:px-[20px] max-[639px]:py-[8px] max-[639px]:text-[9px]"
-              onClick={() => setShowMore(true)}
+          {error && (
+            <div role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+              {error}
+              {status === "error" && (
+                <button
+                  type="button"
+                  className="ml-3 font-semibold underline"
+                  onClick={loadReviews}
+                >
+                  Try again
+                </button>
+              )}
+            </div>
+          )}
+
+          {showForm && user && (
+            <form
+              onSubmit={handleSubmit}
+              className="mb-6 space-y-3 rounded-xl border border-[#e5e5e5] p-4 sm:p-5"
             >
-              Load More Reviews
-            </button>
+              <label className="block text-sm font-semibold text-black">
+                Rating
+                <select
+                  value={rating}
+                  onChange={(event) => setRating(event.target.value)}
+                  className="mt-1 block rounded-lg border border-[#ddd] bg-white px-3 py-2 font-normal"
+                >
+                  {[5, 4, 3, 2, 1].map((value) => (
+                    <option key={value} value={value}>{value} / 5</option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-sm font-semibold text-black">
+                Your review
+                <textarea
+                  required
+                  minLength={10}
+                  maxLength={2000}
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                  placeholder="Share useful details about this product (at least 10 characters)."
+                  className="mt-1 min-h-28 w-full rounded-lg border border-[#ddd] p-3 font-normal outline-none focus:border-black"
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {isSubmitting ? "Submitting..." : "Submit review"}
+              </button>
+            </form>
+          )}
+
+          {status === "loading" ? (
+            <p className="py-8 text-sm text-[#666]">Loading reviews...</p>
+          ) : status === "ready" && reviews.length === 0 ? (
+            <p className="rounded-xl border border-[#e5e5e5] p-6 text-sm text-[#666]">
+              Be the first to share a review.
+            </p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {reviews.map((review) => (
+                <article
+                  key={review._id}
+                  className="rounded-xl border border-[#e5e5e5] p-5"
+                >
+                  <p className="text-lg tracking-widest text-[#d89b00]" aria-label={`${review.rating} out of 5 stars`}>
+                    {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+                  </p>
+                  <h3 className="mt-2 font-bold text-black">{review.customerName}</h3>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#555]">
+                    {review.comment}
+                  </p>
+                  <time className="mt-3 block text-xs text-[#888]" dateTime={review.createdAt}>
+                    {new Date(review.createdAt).toLocaleDateString()}
+                  </time>
+                </article>
+              ))}
+            </div>
           )}
         </div>
       )}
 
       {activeTab === "faq" && (
-        <div className="max-w-[900px] mx-auto my-[20px]">
-          {[
-            "What sizes are available?",
-            "Is this product made from breathable fabric?",
-            "Can I return or exchange this product?",
-            "How long does delivery take?",
-          ].map((question, idx) => (
-            <div className="border-b border-[#e5e5e5]" key={idx}>
-              <button className="w-full border-none bg-transparent px-[5px] py-[22px] flex justify-between items-center text-left text-[15px] cursor-pointer">
-                {question}
-                <span className="text-[20px]">+</span>
-              </button>
-            </div>
-          ))}
+        <div className="mx-auto max-w-[850px] space-y-5 py-6 text-sm leading-6 text-[#555]">
+          <div>
+            <h2 className="font-bold text-black">How do I place an order?</h2>
+            <p>Add available products to your cart, enter delivery details, and choose cash on delivery.</p>
+          </div>
+          <div>
+            <h2 className="font-bold text-black">Can I pay online?</h2>
+            <p>Online payment is not enabled. Checkout currently supports cash on delivery.</p>
+          </div>
+          <div>
+            <h2 className="font-bold text-black">How can I see my order status?</h2>
+            <p>Orders placed while signed in appear in your customer account.</p>
+          </div>
         </div>
       )}
     </section>
