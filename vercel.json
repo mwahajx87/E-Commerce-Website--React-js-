@@ -1,6 +1,17 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://<BACKEND_HOST>/api/:path*" },
+    {
+      "source": "/api/:path*",
+      "destination": "https://ecommerce-backend-nine-zeta.vercel.app/api/:path*"
+    },
+    {
+      "source": "/admin",
+      "destination": "https://admin-panel-e-commerce-dashboad.vercel.app/admin"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "https://admin-panel-e-commerce-dashboad.vercel.app/admin/:path*"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
